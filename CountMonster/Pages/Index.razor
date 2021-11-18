@@ -1,0 +1,202 @@
+﻿@inject AppStateManager AppState
+@inject IApplicationInsights AppInsights
+@inject IJSRuntime JS
+@page "/"
+@using System.Text.Json
+
+<PageTitle>Count Monster // Dashboard</PageTitle>
+
+<div class="grid lg:grid-cols-@_colCount sm:grid-cols-1 md:grid-cols-@(_colCount - 1)">
+    @foreach (var map in AppState.TrackedItems)
+    {
+        <Counter Key=@map.Key ViewStatsRequested="@(async () => { await OnViewStatsRequested(map.Key); })" />
+    }
+    @if (AppState.TrackedItems.Count() == 0)
+    {
+        <div class="rounded dark:border-gray-600 border-2 border-dashed text-gray-500 p-3 m-3">
+            <a class="block text-center text-white mx-3 cursor-pointer" @onclick="OnAddCardClicked">
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <div>Add Counter</div>
+            </div>
+        </a>
+    </div>
+    }
+</div>
+
+<Dialog Title=@($"Stats for {_selectedItem?.Title}") IsOpen=@_isStatsDialogOpen CloseRequested="@(() => { _isStatsDialogOpen = false; _selectedItem = null; })">
+    <Icon>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+    </Icon>
+    <Content>
+        <Tabs Items=@_statsNavItems SelectedItemChanged="OnSelectedStatsNavChanged" />
+
+        <canvas id="statsChart" width="400" height="100"></canvas>
+
+        <div class="flex mt-5 mb-2">
+            <div class="flex-grow dark:text-gray-400">
+                <h2>Raw Data</h2>
+                <span class="text-xs"><strong>Note:</strong> Showing the last 100</span>
+            </div>
+            <div class="align-middle">
+                <Button CssClass="align-middle" Click="OnCopyStatsToJson">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    <span>JSON</span>
+                </Button>
+                <Button CssClass="align-middle" Click="OnCopyStatsToMarkdown">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    <span>Markdown</span>
+                </Button>
+            </div>
+        </div>
+        <table class="mt-2 min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+            <thead class="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Timestamp</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Run Number</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Duration</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    if (_selectedItem != null)
+                    {
+                        var runs = _isViewingLifetime ? _selectedItem.ArchivedRuns.Union(_selectedItem.Runs) : _selectedItem.Runs;
+                        var index = 0;
+                        foreach (var run in runs.OrderByDescending(m => m.TimeStamp).Take(100))
+                        {
+                            var cssClass = index % 2 == 0 ? "dark:bg-gray-600" : "";
+                            <tr class=@cssClass>
+                                <td class="px-6 py-2 text-sm text-left whitespace-nowrap">@run.TimeStamp.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="px-6 py-2 text-sm text-left whitespace-nowrap">@run.Number</td>
+                                <td class="px-6 py-2 text-sm text-left whitespace-nowrap">@(TimeSpan.FromSeconds(run.Duration).ToString("mm\\:ss\\.fff"))</td>
+                                <td class="px-6 py-2 text-sm text-left whitespace-nowrap">@run.Comments</td>
+                            </tr>
+                            index++;
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+    </Content>
+
+</Dialog>
+
+@code {
+    private int _colCount = 3;
+
+    private bool _isStatsDialogOpen;
+
+    private TrackedItem? _selectedItem;
+    private bool _isViewingLifetime = false;
+
+    private IEnumerable<NavItem> _statsNavItems = new NavItem[]
+                {
+        new NavItem{ Title = "Current" },
+        new NavItem { Title = "Lifetime" }
+                };
+
+    protected override async Task OnInitializedAsync()
+    {
+        AppState.OnChange += () =>
+        {
+            base.StateHasChanged();
+        };
+    }
+
+    private async void OnAddCardClicked()
+    {
+        var title = $"Untitled {Guid.NewGuid().ToString().Substring(0, 8)}";
+        var newCard = new TrackedItem { Title = title, Key = title.Slugify() };
+
+        AppState.TrackedItems = AppState.TrackedItems.Union(new[] { newCard });
+        await AppState.SaveAsync();
+
+        await AppInsights.TrackEvent("AddCounter", new Dictionary<string, object?> { { "source", "Index" } });
+    }
+
+    protected async Task OnSelectedStatsNavChanged(NavItem item)
+    {
+        if (_selectedItem == null)
+        {
+            return;
+        }
+
+        IEnumerable<TrackedRun> runs;
+
+        if (item.Title.Equals("Current", StringComparison.OrdinalIgnoreCase))
+        {
+            runs = _selectedItem.Runs.OrderBy(m => m.TimeStamp);
+            _isViewingLifetime = false;
+        }
+        else
+        {
+            runs = _selectedItem.ArchivedRuns.Union(_selectedItem.Runs).OrderBy(m => m.TimeStamp);
+            _isViewingLifetime = true;
+        }
+
+        var labels = runs.Select(m => m.Number);
+        var datasets = new object[] {
+            new { label = "Duration (mins)", backgroundColor = "rgba(236, 0, 140, 0.5)",  data = runs.Select(m => m.Duration / 60.0) },
+            new { label = "Hit", backgroundColor = "#0f0", data = runs.Select(m =>{ return string.IsNullOrWhiteSpace(m.Comments) ? 0 : 1; } )}
+        };
+
+
+        await JS.InvokeVoidAsync("app.chart", "statsChart", "line", labels, datasets);
+    }
+
+    protected async Task OnViewStatsRequested(string key)
+    {
+        _selectedItem = AppState.TrackedItems.FirstOrDefault(m => m.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+
+        _isStatsDialogOpen = true;
+
+        await OnSelectedStatsNavChanged(_statsNavItems.First());
+
+    }
+
+    protected async Task OnCopyStatsToJson()
+    {
+        if(_selectedItem == null) {
+            return;
+        }
+
+        IEnumerable<TrackedRun> runs = _isViewingLifetime ? _selectedItem.ArchivedRuns.Union(_selectedItem.Runs) : _selectedItem.Runs;
+        runs = runs.OrderBy(m => m.TimeStamp);
+
+        await JS.InvokeVoidAsync("app.copyText", JsonSerializer.Serialize(runs));
+    }
+
+    protected async Task OnCopyStatsToMarkdown()
+    {
+        if(_selectedItem == null) {
+            return;
+        }
+
+        IEnumerable<TrackedRun> runs = _isViewingLifetime ? _selectedItem.ArchivedRuns.Union(_selectedItem.Runs) : _selectedItem.Runs;
+        runs = runs.OrderBy(m => m.TimeStamp);
+
+        var output = (_isViewingLifetime ? "| Lifetime # " : "") + "| Run # | Duration | Comments |";
+        output += "\r\n" + (_isViewingLifetime ? "| --- " : "")  +"| --- | --- | --- |";
+
+        var count = 1;
+        foreach(var run in runs)
+        {
+            output += $"\r\n" + 
+            (_isViewingLifetime ? "|{count}" : "") +
+            $"|{run.Number}|{TimeSpan.FromSeconds(run.Duration).ToString("mm\\:ss\\.fff")}|{run.Comments}|";
+            count++;
+        }
+
+        await JS.InvokeVoidAsync("app.copyText", output);
+    }
+}

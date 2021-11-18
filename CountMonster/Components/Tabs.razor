@@ -1,0 +1,76 @@
+﻿<div class="rounded w-full relative dark:bg-gray-800 mb-3">
+    <nav class="flex w-full">
+        <ul class="flex m-0 p-0">
+            @{
+                var index = 0;
+                foreach (var item in Items)
+                {
+                    var isFirst = index == 0;
+                    var isLast = index == Items.Count() - 1;
+                    <li class="inline-block p-0 m-0">
+                        <button title=@item.Title
+                            @onclick="@(async () => { await OnTabSelected(item); })"
+                        class=@($"{GetCssClass(item, isFirst, isLast)} inline-block px-4 py-2 mr-0")>
+                            @item.Icon
+                            <span>@item.Title</span>
+                        </button>
+                    </li>
+                    index++;
+                }
+            }
+        </ul>
+    </nav>
+</div>
+
+@code {
+
+
+    [Parameter]
+    public IEnumerable<NavItem> Items { get; set; }
+
+    [Parameter]
+    public NavItem? SelectedItem { get; set; }
+
+    [Parameter]
+    public EventCallback<NavItem> SelectedItemChanged { get; set; }
+
+    protected string GetCssClass(NavItem item, bool isFirst, bool isLast)
+    {
+        var cssClass = "rounded-none";
+
+        if (item == SelectedItem)
+        {
+            cssClass += " bg-brand text-white";
+        }
+        else
+        {
+            cssClass += " dark:bg-gray-700 dark:text-white";
+        }
+
+        if(isFirst)
+        {
+            cssClass += " rounded-l";
+        }
+        else if(isLast)
+        {
+            cssClass += " rounded-r";
+        }
+
+        return cssClass;
+    }
+
+    protected async Task OnTabSelected(NavItem item)
+    {
+        SelectedItem = item;
+        await SelectedItemChanged.InvokeAsync(item);
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SelectedItem == null && Items != null)
+        {
+            await OnTabSelected(Items.First());
+        }
+    }
+}

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+		<UserSecretsId>bfc24973-6309-4aa7-aa02-f6c6249c7816</UserSecretsId>
+		<ApplicationInsightsResourceId>/subscriptions/652c0716-be85-4a1a-adad-4b6466c0f2ab/resourceGroups/rg-counter/providers/microsoft.insights/components/ai-counter</ApplicationInsightsResourceId>
+
+		<!-- Trimming -->
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<BlazorEnableTimeZoneSupport>false</BlazorEnableTimeZoneSupport>
+		<PublishTrimmed>true</PublishTrimmed>
+		<EnableUnsafeUTF7Encoding>false</EnableUnsafeUTF7Encoding>
+		<MetadataUpdaterSupport>false</MetadataUpdaterSupport>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BlazorApplicationInsights" Version="1.4.0" />
+		<PackageReference Include="Blazored.LocalStorage" Version="4.1.5" />
+		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.15.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="6.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="6.0.0" PrivateAssets="all" />
+		<PackageReference Include="SkorBlazor.OutsideClickHandler" Version="0.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<BlazorWebAssemblyLazyLoad Include="System.Security.AccessControl.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Claims.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Cryptography.Algorithms.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Cryptography.Csp.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Cryptography.Primitives.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Cryptography.ProtectedData.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Cryptography.X509Certificates.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Permissions.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Principal.dll" />
+		<BlazorWebAssemblyLazyLoad Include="System.Security.Principal.Windows.dll" />
+	</ItemGroup>
+</Project>

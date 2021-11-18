@@ -1,0 +1,42 @@
+﻿<OutsideContainer OnClickOutside="@(async () => { Console.WriteLine("Closing"); IsOpened = false; await IsOpenedChanged.InvokeAsync(IsOpened); })">
+    <div class="relative">
+        <button class=@($"p-2 opacity-70 " + (IsOpened ?  _openedBgClass : string.Empty)) @onclick="OnDropdownClicked">
+            @ButtonContent
+        </button>
+        <div class="@GetCssClass() drop-shadow-md absolute left-0 top-100 bg-white z-50 dark:bg-gray-800 shadow-lg">
+            @DropdownContent
+        </div>
+    </div>
+</OutsideContainer>
+
+@code {
+    private string _openedBgClass = " dark:bg-gray-800";
+
+    [Parameter]
+    public bool IsOpened { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<bool> IsOpenedChanged { get; set; }
+
+    [Parameter]
+    public RenderFragment ButtonContent { get; set; }
+
+    [Parameter]
+    public RenderFragment DropdownContent { get; set; }
+
+    private string GetCssClass()
+    {
+        if (!IsOpened)
+        {
+            return "hidden";
+        }
+
+        return "block";
+    }
+
+    private async void OnDropdownClicked()
+    {
+        IsOpened = !IsOpened;
+        await IsOpenedChanged.InvokeAsync(IsOpened);
+    }
+}

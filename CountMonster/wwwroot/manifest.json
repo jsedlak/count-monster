@@ -1,0 +1,21 @@
+{
+  "name": "Count Monster",
+  "short_name": "Count Monster",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#1f2937",
+  "theme_color": "#912d2d",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+﻿@inject AppStateManager AppState
+@inject IApplicationInsights AppInsights
+
+@if (Item != null)
+{
+    <div class="rounded p-3 m-3 dark:bg-gray-700 text-white">
+        <div class="flex">
+            <Dropdown @bind-IsOpened=@_isMenuOpened>
+                <ButtonContent>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                    </svg>
+                </ButtonContent>
+                <DropdownContent>
+                    <ul class="p-0 px-0 m-0">
+                        <li class="p-0 m-0">
+                            <a class="whitespace-nowrap px-2 py-1 block hover:bg-brand" @onclick="@(async () => { _isMenuOpened = false; await ViewStatsRequested.InvokeAsync(); })">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                View Stats
+                            </a>
+                        </li>
+                        @*<li class="p-0 py-1 m-0"><hr class="opacity-20" /></li>*@
+                        <li class="p-0 py-0 m-0">
+                            <a class="whitespace-nowrap px-2 py-1 block hover:bg-brand" @onclick="OnOpenEditor">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Edit Counter
+                            </a>
+                        </li>
+                        <li class="p-0 py-1 m-0"><hr class="opacity-20" /></li>
+                        <li class="p-0 py-0 m-0">
+                            <a class="whitespace-nowrap px-2 py-1 block hover:bg-brand" @onclick="OnResetCurrent">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Reset Current
+                            </a>
+                        </li>
+                        <li class="p-0 py-0 m-0">
+                            <a class="whitespace-nowrap px-2 py-1 block hover:bg-brand" @onclick="OnResetLifetime">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                                </svg>
+                                Reset Lifetime
+                            </a>
+                        </li>
+                        <li class="p-0 py-1 m-0"><hr class="opacity-20" /></li>
+                        <li class="p-0 py-0 m-0">
+                            <a class="whitespace-nowrap px-2 py-1 block hover:bg-red-500 hover:text-white text-red-400" @onclick="OnRequestDelete">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                Delete
+                            </a>
+                        </li>
+                    </ul>
+                </DropdownContent>
+            </Dropdown>
+
+            <h1 class="flex-grow text-lg text-center p-2">@Item.Title (@Item.LifetimeCount)</h1>
+        </div>
+
+        <div class="p-3 font-bold text-center text-2xl current-count">@Item.Runs.Count</div>
+
+        <input type="text" placeholder="Run comments...." class="my-3 block p-3 dark:bg-gray-500 text-white w-full" @bind-value=@_commentText />
+
+        <div class="flex">
+            <button class="rounded flex-grow p-3 dark:bg-gray-600 dark:border-gray-800 border-2" @onclick="OnIncrementClicked">+1</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="rounded p-3 m-3 dark:bg-gray-700 text-white">
+        <div class="p-3 font-bold text-red-500">
+            Could not find counter for key, @Key
+        </div>
+    </div>
+}
+
+@if (_isEditOpen)
+{
+    <Slide CloseRequested="@(() => { _isEditOpen = false; StateHasChanged(); })" Title="Edit Counter">
+        <FormContent>
+            <div class="mb-3">
+                <div class="col-span-3 sm:col-span-2">
+                    <label for="company-website" class="block text-sm font-medium">
+                        Title
+                    </label>
+                    <div class="">
+                        <input type="text"
+                           @bind-value="@_editingTitle"
+                           class="rounded p-3 dark:bg-gray-500 dark:text-white focus:ring-indigo-500 flex-1 block w-full" placeholder="Diablo - Hell">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="col-span-3 sm:col-span-2">
+                    <label for="company-website" class="block text-sm font-medium">
+                        Key
+                    </label>
+                    <div class="">
+                        <input @bind-value="@_editingKey"
+                           type="text"
+                           name="counterKey"
+                           id="counterKey"
+                           class="rounded p-3 dark:bg-gray-500 dark:text-white focus:ring-indigo-500 flex-1 block w-full"
+                           placeholder="diablo-hell">
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button @onclick="OnSaveClicked" class="rounded dark:bg-brand bg-brand text-white p-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Save
+                </button>
+            </div>
+        </FormContent>
+    </Slide>
+}
+
+@if (_isDeleteOpen)
+{
+    <Dialog IsOpen="_isDeleteOpen" Title="Confirm Delete">
+        <Icon>
+            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </Icon>
+        <Content>
+            <p>Are you sure you want to delete @(Item.Title)?</p>
+            <p class="mt-3 text-red-500 font-bold">Note: This will delete all data associated with this counter and is irreversable!</p>
+        </Content>
+        <Footer>
+            <button @onclick="OnConfirmDelete" type="button"
+                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                Delete
+            </button>
+            <button @onclick="@(() => { _isDeleteOpen = false; StateHasChanged(); })" type="button"
+                class="mt-3 w-full inline-flex justify-center rounded-md border dark:bg-gray-600 dark:text-white border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                Cancel
+            </button>
+        </Footer>
+    </Dialog>
+}
+
+@code {
+    [Parameter]
+    public string Key { get; set; }
+
+    [Parameter]
+    public EventCallback ViewStatsRequested { get; set; }
+
+    protected TrackedItem Item { get; set; }
+
+    private string? _commentText;
+    // private DateTimeOffset _lastTimeStamp = DateTimeOffset.UtcNow;
+
+    private bool _isEditOpen = false;
+    private bool _isMenuOpened = false;
+    private bool _isDeleteOpen = false;
+
+    private string? _editingTitle = string.Empty;
+    private string? _editingKey = string.Empty;
+
+    protected async void OnRequestDelete()
+    {
+        _isMenuOpened = false;
+        _isDeleteOpen = true;
+        await AppInsights.TrackEvent("RequestDelete");
+    }
+
+    protected async void OnConfirmDelete()
+    {
+        AppState.TrackedItems = AppState.TrackedItems.Except(new[] { Item });
+        _isDeleteOpen = false;
+        await AppState.SaveAsync();
+        await AppInsights.TrackEvent("DeleteCounter");
+    }
+
+    protected async void OnOpenEditor()
+    {
+        _isEditOpen = true;
+        _isMenuOpened = false;
+        _editingTitle = Item.Title;
+        _editingKey = Item.Key;
+        await AppInsights.TrackEvent("OpenEditor");
+    }
+
+    protected async void OnSaveClicked()
+    {
+        _isEditOpen = false;
+        Item.Title = _editingTitle;
+        Item.Key = _editingKey;
+        await AppState.SaveAsync();
+        await AppInsights.TrackEvent("SaveCounter");
+    }
+
+    protected async void OnResetCurrent()
+    {
+        Item.ArchivedRuns.AddRange(Item.Runs);
+        Item.Runs.Clear();
+        _isMenuOpened = false;
+        await AppState.SaveAsync();
+        await AppInsights.TrackEvent("ResetCurrent");
+    }
+
+    protected async void OnResetLifetime()
+    {
+        Item.Runs.Clear();
+        Item.ArchivedRuns.Clear();
+        _isMenuOpened = false;
+        await AppState.SaveAsync();
+        await AppInsights.TrackEvent("ResetLifetime");
+    }
+
+    protected async void OnIncrementClicked()
+    {
+        var newTimeStamp = DateTimeOffset.Now;
+        var delta = newTimeStamp - AppState.TimerBase;
+        AppState.TimerBase = newTimeStamp;
+
+        Item.Runs.Add(new TrackedRun
+            {
+                TimeStamp = DateTimeOffset.Now,
+                Comments = _commentText,
+                Duration = (float)delta.TotalSeconds,
+                Number = Item.Runs.Count() + 1
+            }
+        );
+
+        await AppState.SaveAsync();
+        await AppInsights.TrackEvent("Increment");
+
+        _commentText = "";
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        Item = AppState.TrackedItems.FirstOrDefault(m => m.Key.Equals(Key, StringComparison.OrdinalIgnoreCase));
+    }
+}
