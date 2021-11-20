@@ -1,4 +1,4 @@
-﻿<OutsideContainer OnClickOutside="@(async () => { Console.WriteLine("Closing"); IsOpened = false; await IsOpenedChanged.InvokeAsync(IsOpened); })">
+﻿<OutsideContainer OnClickOutside="@(async () => { IsOpened = false; await IsOpenedChanged.InvokeAsync(IsOpened); })">
     <div class="relative">
         <button class=@($"p-2 opacity-70 " + (IsOpened ?  _openedBgClass : string.Empty)) @onclick="OnDropdownClicked">
             @ButtonContent

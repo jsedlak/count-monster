@@ -63,12 +63,20 @@
             <h1 class="flex-grow text-lg text-center p-2">@Item.Title (@Item.LifetimeCount)</h1>
         </div>
 
-        <div class="p-3 font-bold text-center text-2xl current-count">@Item.Runs.Count</div>
+        <div class="p-3 font-bold text-center text-6xl current-count">@Item.Runs.Count</div>
 
-        <input type="text" placeholder="Run comments...." class="my-3 block p-3 dark:bg-gray-500 text-white w-full" @bind-value=@_commentText />
+        @if (Item != null && Item.Runs != null && Item.Runs.Any())
+        {
+            var lastRun = Item.Runs.Last();
+            <div class="p-3 text-center text-sm dark:text-white opacity-50">
+                Last Run<br/>@lastRun.TimeStamp.ToString("MM/dd HH:mm:ss") (@(TimeSpan.FromSeconds(lastRun.Duration).ToString("mm\\:ss")))
+            </div>
+        }
+
+        <input type="text" placeholder="Run comments...." class="my-3 block p-3 dark:bg-gray-500 text-white w-full rounded" @bind-value=@_commentText @onkeyup="OnCommentsKeyUp" />
 
         <div class="flex">
-            <button class="rounded flex-grow p-3 dark:bg-gray-600 dark:border-gray-800 border-2" @onclick="OnIncrementClicked">+1</button>
+            <button class="rounded flex-grow px-3 py-5 bg-brand hover:bg-brandhover rounded text-lg font-bold" @onclick="OnIncrementClicked">+1</button>
         </div>
     </div>
 }
@@ -170,6 +178,15 @@ else
     private string? _editingTitle = string.Empty;
     private string? _editingKey = string.Empty;
 
+    protected async void OnCommentsKeyUp(KeyboardEventArgs args)
+    {
+        // Console.WriteLine(args.Code + " // " + args.Key);
+        if (args.Code.Equals("Enter") || args.Code.Equals("Return"))
+        {
+            await OnIncrementClicked();
+        }
+    }
+
     protected async void OnRequestDelete()
     {
         _isMenuOpened = false;
@@ -221,7 +238,7 @@ else
         await AppInsights.TrackEvent("ResetLifetime");
     }
 
-    protected async void OnIncrementClicked()
+    protected async Task OnIncrementClicked()
     {
         var newTimeStamp = DateTimeOffset.Now;
         var delta = newTimeStamp - AppState.TimerBase;

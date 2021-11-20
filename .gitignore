@@ -387,3 +387,7 @@ FodyWeavers.xsd
 .idea/
 *.sln.iml
 .vscode
+
+# Other manual entries
+.arm.json
+ServiceDependencies/

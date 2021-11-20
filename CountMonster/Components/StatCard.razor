@@ -1,0 +1,16 @@
+﻿<div class=@("rounded flex-grow p-5 dark:bg-gray-800 text-white text-center" + CssClass)>
+    <div class="text-sm">@Title</div>
+    <div class="text-2xl font-bold">@Stat</div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string Title{ get; set; }
+
+    [Parameter]
+    public string Stat { get; set; }
+
+    [Parameter]
+    public string CssClass { get; set; }
+}

@@ -7,12 +7,8 @@
     <div class="relative dark:bg-gray-700 p-3">
         <div class="flex justify-between items-center">
             <div class="flex justify-start mr-4">
-                <span class="text-white type-monster">Count Monster</span>
+                <span class="text-white type-monster text-2xl">Count Monster</span>
             </div>
-
-            @*<nav class="flex flex-grow">
-                <a class="p-2 rounded dark:border-gray-800 dark:bg-gray-800" href="/">Dashboard</a>
-                </nav>*@
 
             <nav class="flex items-center">
                 <div class="text-white mx-3 cursor-pointer py-3 px-4 dark:bg-gray-600 rounded">
@@ -33,18 +29,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </a>
-                @*<a class="text-white mx-3 cursor-pointer" >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    </a>
-                    <a class="text-white mx-3 cursor-pointer" href="/settings">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    </a>*@
             </nav>
         </div>
 
@@ -84,10 +68,36 @@
     </Slide>
 }
 
+@if (AppState.IsInitialized && AppState.MetaData.LatestVersionRead < AppState.MetaData.Version)
+{
+
+    <Dialog Title="Welcome to Count Monster!" IsOpen=@_isReleaseNotesDialogOpen CloseRequested="OnCloseReleaseNotesRequested">
+        <Content>
+            <p class="leading-loose text-lg">
+                Count Monster is a little app devoted to counting repetitive tasks while keeping track of some basic stats such as duration, or how often there was a comment made. You can add as many counters as you'd like, so why not get started!
+            </p>
+
+            <a class="block w-full p-3 bg-brand text-white text-center font-bold cursor-pointer rounded my-2" @onclick="OnCloseReleaseNotesRequested">Take Me To The App!</a>
+
+            @{
+                var release = Constants.Releases.FirstOrDefault(m => m.Version == AppState.MetaData.Version);
+
+                if (release != null)
+                {
+                    <div class="my-3 rounded p-3 bg-gray-800">
+                        <DynamicComponent Type=@(Type.GetType("CountMonster.Components.Notes." + release.NotesComponent)) />
+                    </div>
+                }
+            }
+        </Content>
+    </Dialog>
+}
+
 @code {
     private TimeSpan _timeDelta = TimeSpan.FromSeconds(0);
     private Timer _timer;
     private bool _isInfoSlideOpen = false;
+    private bool _isReleaseNotesDialogOpen = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -110,5 +120,12 @@
         await AppState.SaveAsync();
 
         await AppInsights.TrackEvent("MainLayout.AddCounter", new Dictionary<string, object?> { { "source", "MainLayout" } });
+    }
+
+    protected async void OnCloseReleaseNotesRequested()
+    {
+        Console.WriteLine("Close Requested");
+        AppState.MetaData.LatestVersionRead = AppState.MetaData.Version;
+        await AppState.SaveAsync();
     }
 }

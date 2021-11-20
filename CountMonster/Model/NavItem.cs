@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace CountMonster.Model
-{
-    public class NavItem
-    {
-        public string Title { get; set; }
+namespace CountMonster.Model;
 
-        public RenderFragment Icon { get; set; }
-    }
+public class NavItem
+{
+    public string Title { get; set; }
+
+    public RenderFragment Icon { get; set; }
 }
+
