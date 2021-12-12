@@ -8,6 +8,8 @@ public class TrackedItem
 
     public int Version { get; set; } = 0;
 
+    public int Order { get; set; } = -1;
+
     public int LifetimeCount => Runs.Count + ArchivedRuns.Count;
 
     public List<TrackedRun> Runs { get; set; } = new List<TrackedRun>();

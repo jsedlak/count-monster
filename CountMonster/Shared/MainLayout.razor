@@ -4,36 +4,62 @@
 @inject IApplicationInsights AppInsights
 
 <div class="page">
-    <div class="relative dark:bg-gray-700 p-3">
-        <div class="flex justify-between items-center">
-            <div class="flex justify-start mr-4">
-                <span class="text-white type-monster text-2xl">Count Monster</span>
+    <div class="fixed w-full z-10 shadow-lg">
+        <div class="relative dark:bg-gray-900 p-3">
+            <div class="md:flex justify-between items-center">
+                <div class="flex justify-start mr-4">
+                    <span class="text-white type-monster text-2xl">Count Monster</span>
+                </div>
+
+                <nav class="md:flex items-center">
+                    <div class="text-white mx-2 py-3 px-4 dark:bg-gray-600 rounded sm:mb-2 md:mb-0" title="Lifetime Total Time Tracked">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-1 inline-block mb-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        @{
+                            var totalTime = TimeSpan.FromSeconds(AppState.TrackedItems.Sum(m => m.TotalTimeLifetime().TotalSeconds));
+                            <span>@(totalTime.ToString("dd\\:hh\\:mm\\:ss"))</span>
+                        }
+                    </div>
+
+                    <div class="text-white mx-2 py-3 px-4 dark:bg-gray-600 rounded sm:mb-2 md:mb-0" title="Session Total Time Tracked">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="mr-1 inline-block mb-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        @{
+                            var sessionTotalTime = TimeSpan.FromSeconds(AppState.TrackedItems.Sum(m => m.TotalTime().TotalSeconds));
+                            <span>@(sessionTotalTime.ToString("dd\\:hh\\:mm\\:ss"))</span>
+                        }
+                    </div>
+
+                    <div class="text-white mx-2 cursor-pointer py-3 px-4 dark:bg-gray-600 rounded sm:mb-2 md:mb-0" title="Current Timer">
+                        @(_timeDelta.ToString("hh\\:mm\\:ss"))
+                        <a @onclick="@(async () => { AppState.TimerBase = DateTimeOffset.Now; StateHasChanged(); })">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="ml-1 inline-block mb-1 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </a>
+                    </div>
+
+                    <a class="inline-block py-3 px-4 bg-brand rounded text-white mx-2 cursor-pointer sm:block sm:mb-2 md:mb-0" @onclick="OnAddCardClicked">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Add Counter
+                    </a>
+
+                    <a class="inline-block py-3 px-4 bg-brand rounded text-white mx-2 mr-0 cursor-pointer sm:block sm:mb-2 md:mb-0" @onclick="@(() => { _isInfoSlideOpen = true; })">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Info &amp; Help
+                    </a>
+                </nav>
             </div>
 
-            <nav class="flex items-center">
-                <div class="text-white mx-3 cursor-pointer py-3 px-4 dark:bg-gray-600 rounded">
-                    @(_timeDelta.ToString("hh\\:mm\\:ss\\.fff"))
-                    <a @onclick="@(async () => { AppState.TimerBase = DateTimeOffset.Now; StateHasChanged(); })">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                    </a>
-                </div>
-                <a class="text-white mx-3 cursor-pointer" @onclick="OnAddCardClicked">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </a>
-                <a class="text-white mx-3 cursor-pointer" @onclick="@(() => { _isInfoSlideOpen = true; })">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </a>
-            </nav>
         </div>
-
     </div>
-    <main>
+    <main class="pt-20">
         @Body
     </main>
 </div>
@@ -46,6 +72,12 @@
             <a href="https://discord.gg/ejB7YMm" class="w-full block my-3 bg-discord p-5 text-white rounded">
                 <img class="inline-block" width="24" src="/img/discord-brands.svg" />
                 Discord
+            </a>
+
+            <p>Did you know this project is open source? Get the code on github!</p>
+            <a href="https://github.com/jsedlak/count-monster" class="w-full block my-3 bg-brand p-5 text-white rounded">
+                <img class="inline-block" width="24" src="/img/github-brands.svg" />
+                github
             </a>
 
             <p class="mt-10">
@@ -64,6 +96,7 @@
                 Buy Me A Coffee (Donate)
             </a>
 
+            <p class="mt-4 text-gray-600 text-sm">Version: 1.20211210.2</p>
         </FormContent>
     </Slide>
 }
@@ -101,20 +134,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await AppState.InitializeAsync();
-
         _timer = new Timer((object? stateInfo) =>
         {
             _timeDelta = DateTimeOffset.Now - AppState.TimerBase;
             StateHasChanged();
-        }, new AutoResetEvent(false), 16, 16);
+        }, new AutoResetEvent(true), 1000, 1000);
     }
 
 
     private async void OnAddCardClicked()
     {
-        var title = $"Untitled {Guid.NewGuid().ToString().Substring(0, 8)}";
-        var newCard = new TrackedItem { Title = title, Key = title.Slugify() };
+        var key = Guid.NewGuid().ToString();
+        var title = $"Untitled {key.Substring(0, 8)}";
+
+        var newCard = new TrackedItem { Title = title, Key = key };
 
         AppState.TrackedItems = AppState.TrackedItems.Union(new[] { newCard });
         await AppState.SaveAsync();

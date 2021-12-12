@@ -84,7 +84,7 @@ else
 {
     <div class="rounded p-3 m-3 dark:bg-gray-700 text-white">
         <div class="p-3 font-bold text-red-500">
-            Could not find counter for key, @Key
+            Could not find counter
         </div>
     </div>
 }
@@ -105,7 +105,7 @@ else
                     </div>
                 </div>
             </div>
-
+@*
             <div class="mb-3">
                 <div class="col-span-3 sm:col-span-2">
                     <label for="company-website" class="block text-sm font-medium">
@@ -120,7 +120,7 @@ else
                            placeholder="diablo-hell">
                     </div>
                 </div>
-            </div>
+            </div>*@
 
             <div>
                 <button @onclick="OnSaveClicked" class="rounded dark:bg-brand bg-brand text-white p-4">
@@ -161,12 +161,10 @@ else
 
 @code {
     [Parameter]
-    public string Key { get; set; }
-
-    [Parameter]
     public EventCallback ViewStatsRequested { get; set; }
 
-    protected TrackedItem Item { get; set; }
+    [Parameter]
+    public TrackedItem Item { get; set; }
 
     private string? _commentText;
     // private DateTimeOffset _lastTimeStamp = DateTimeOffset.UtcNow;
@@ -215,7 +213,7 @@ else
     {
         _isEditOpen = false;
         Item.Title = _editingTitle;
-        Item.Key = _editingKey;
+        // Item.Key = _editingKey;
         await AppState.SaveAsync();
         await AppInsights.TrackEvent("SaveCounter");
     }
@@ -258,10 +256,5 @@ else
 
         _commentText = "";
         StateHasChanged();
-    }
-
-    protected override void OnInitialized()
-    {
-        Item = AppState.TrackedItems.FirstOrDefault(m => m.Key.Equals(Key, StringComparison.OrdinalIgnoreCase));
     }
 }

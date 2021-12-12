@@ -6,11 +6,19 @@
 
 <PageTitle>Count Monster // Dashboard</PageTitle>
 
-<div class="grid lg:grid-cols-@_colCount sm:grid-cols-1 md:grid-cols-@(_colCount - 1)">
-    @foreach (var map in AppState.TrackedItems)
+<div ondragover="event.preventDefault();" class="grid lg:grid-cols-@_colCount sm:grid-cols-1 md:grid-cols-@(_colCount - 1)">
+    @foreach (var map in AppState.TrackedItems.OrderBy(m => m.Order))
     {
-        <Counter Key=@map.Key ViewStatsRequested="@(async () => { await OnViewStatsRequested(map.Key); })" />
+        <div draggable="true"
+         @ondrop="@(async () => { await Drop(map); })"
+         @ondrag="@(() => { Drag(map); })"
+         @ondragenter="@(() => { _currentDragOver = map; })"
+         @ondragleave="@(() => { /* _currentDragOver = null; */ })"
+         class="@(map == _currentDragOver ? "border-red-500 border-l-2 pl-2" : "")">
+            <Counter Item=@map ViewStatsRequested="@(async () => { await OnViewStatsRequested(map.Key); })" />
+        </div>
     }
+
     @if (AppState.TrackedItems.Count() == 0 || !AppState.MetaData.HideAddCounterCard)
     {
         <div class="flex items-center justify-center rounded dark:border-gray-600 border-2 border-dashed text-gray-500 p-3 m-3">
@@ -54,6 +62,12 @@
                 <span class="text-xs"><strong>Note:</strong> Showing the last 100</span>
             </div>
             <div class="align-middle">
+                <ToggleButton CssClass="align-middle" @bind-IsToggled=_isViewingHits>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Hits Only</span>
+                </ToggleButton>
                 <Button CssClass="align-middle" Click="OnCopyStatsToJson">
                     <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
@@ -75,7 +89,7 @@
                 <StatCard Title="Avg Run Time" Stat=@((_isViewingLifetime ? _selectedItem.AvgLifetimeRunTime() : _selectedItem.AvgRunTime()).ToString("mm\\:ss")) />
                 <StatCard Title="Median Run Time" Stat=@((_isViewingLifetime ? _selectedItem.MedianLifetimeRunTime() : _selectedItem.MedianRunTime()).ToString("mm\\:ss")) />
                 <StatCard Title="Hit Rate" Stat=@((_isViewingLifetime ? _selectedItem.HitRateLifetime() : _selectedItem.HitRate()).ToString("N2") + "%") />
-                <StatCard Title="Total Time" Stat=@((_isViewingLifetime ? _selectedItem.TotalTimeLifetime() : _selectedItem.TotalTime()).ToString("hh\\:mm\\:ss")) />
+                <StatCard Title="Total Time" Stat=@((_isViewingLifetime ? _selectedItem.TotalTimeLifetime() : _selectedItem.TotalTime()).ToString("d\\:hh\\:mm\\:ss")) />
             }
 
         </div>
@@ -93,6 +107,12 @@
                 @if (_selectedItem != null)
                 {
                     var runs = _isViewingLifetime ? _selectedItem.ArchivedRuns.Union(_selectedItem.Runs) : _selectedItem.Runs;
+
+                    if (_isViewingHits)
+                    {
+                        runs = runs.Where(m => !string.IsNullOrWhiteSpace(m.Comments));
+                    }
+
                     var index = 0;
                     foreach (var run in runs.OrderByDescending(m => m.TimeStamp).Take(100))
                     {
@@ -119,12 +139,13 @@
 
     private TrackedItem? _selectedItem;
     private bool _isViewingLifetime = false;
+    private bool _isViewingHits = false;
 
     private IEnumerable<NavItem> _statsNavItems = new NavItem[]
-                        {
+                                {
         new NavItem{ Title = "Current" },
         new NavItem { Title = "Lifetime" }
-                        };
+                                };
 
     protected override async Task OnInitializedAsync()
     {
@@ -195,6 +216,11 @@
         IEnumerable<TrackedRun> runs = _isViewingLifetime ? _selectedItem.ArchivedRuns.Union(_selectedItem.Runs) : _selectedItem.Runs;
         runs = runs.OrderBy(m => m.TimeStamp);
 
+        if(_isViewingHits)
+        {
+            runs = runs.Where(m => !string.IsNullOrWhiteSpace(m.Comments));
+        }
+
         await JS.InvokeVoidAsync("app.copyText", JsonSerializer.Serialize(runs));
     }
 
@@ -208,18 +234,74 @@
         IEnumerable<TrackedRun> runs = _isViewingLifetime ? _selectedItem.ArchivedRuns.Union(_selectedItem.Runs) : _selectedItem.Runs;
         runs = runs.OrderBy(m => m.TimeStamp);
 
+        //if(_isViewingHits)
+        //{
+        //    runs = runs.Where(m => !string.IsNullOrWhiteSpace(m.Comments));
+        //}
+
         var output = (_isViewingLifetime ? "| Lifetime # " : "") + "| Run # | Duration | Comments |";
         output += "\r\n" + (_isViewingLifetime ? "| --- " : "") + "| --- | --- | --- |";
 
-        var count = 1;
+        var count = 0;
         foreach (var run in runs)
         {
-            output += $"\r\n" +
-            (_isViewingLifetime ? "|{count}" : "") +
-            $"|{run.Number}|{TimeSpan.FromSeconds(run.Duration).ToString("mm\\:ss\\.fff")}|{run.Comments}|";
             count++;
+
+            // skip non-hits
+            if(_isViewingHits && string.IsNullOrWhiteSpace(run.Comments))
+            {
+                continue;
+            }
+
+            output += $"\r\n" +
+            (_isViewingLifetime ? $"|{count}" : "") +
+            $"|{run.Number}|{TimeSpan.FromSeconds(run.Duration).ToString("mm\\:ss\\.fff")}|{run.Comments}|";
+            
         }
 
         await JS.InvokeVoidAsync("app.copyText", output);
+    }
+
+    private TrackedItem? _currentDragSelection = null;
+    private TrackedItem? _currentDragOver = null;
+
+    protected void Drag(TrackedItem item)
+    {
+        if (_currentDragSelection != null)
+        {
+            return;
+        }
+
+        _currentDragSelection = item;
+    }
+
+    protected async Task Drop(TrackedItem landingItem)
+    {
+        if (_currentDragSelection == null)
+        {
+            return;
+        }
+
+        //keep the original order for later
+        int originalOrderLanding = landingItem.Order;
+
+        //increase model under landing one by 1
+        AppState.TrackedItems.Where(x => x.Order >= landingItem.Order).ToList().ForEach(x => x.Order++);
+
+        //replace landing model
+        _currentDragSelection.Order = originalOrderLanding;
+
+        int ii = 0;
+        foreach (var model in AppState.TrackedItems.OrderBy(x => x.Order).ToList())
+        {
+            //keep the numbers from 0 to size-1
+            model.Order = ii++;
+        }
+
+        AppState.TrackedItems = AppState.TrackedItems.OrderBy(m => m.Order);
+        await AppState.SaveAsync();
+
+        _currentDragSelection = null;
+        _currentDragOver = null;
     }
 }
