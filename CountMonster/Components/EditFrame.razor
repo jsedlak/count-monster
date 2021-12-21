@@ -1,0 +1,54 @@
+﻿<div class="edit-frame">
+    @if(!IsEditorOpen) 
+    {
+        <div class="relative edit-frame--viewer w-full p-3">
+            <div class="w-full flex justify-end">
+                <button @onclick="OnEditClicked" class="background-0 border-0 block mr-1 mt-1 outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+            </div>
+            @ViewContent
+        </div>
+    }
+    else 
+    {
+        <div class="edit-frame--editor relative w-full p-3">
+            @EditContent
+
+            <div class="w-full flex justify-end">
+                <button class="background-0 border-0 block mr-1 mt-1 outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+
+                <button class="background-0 border-0 block mr-1 mt-1 outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public bool IsEditorOpen { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<bool> IsEditorOpenChanged { get; set; }
+
+    [Parameter]
+    public EventCallback Saved { get; set; }
+
+    [Parameter]
+    public EventCallback Cancelled { get; set;}
+
+    [Parameter]
+    public RenderFragment ViewContent { get; set; }
+
+    [Parameter]
+    public RenderFragment EditContent { get; set; }
+
+    private async void OnEditClicked() {
+        IsEditorOpen = true;
+        await IsEditorOpenChanged.InvokeAsync(true);
+    }
+}
