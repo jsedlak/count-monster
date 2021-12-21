@@ -45,15 +45,6 @@
     }
 </div>
 
-<EditFrame>
-    <ViewContent>
-        1
-    </ViewContent>
-    <EditContent>
-        <input type="text" class="block w-full py-1 px-1 dark:text-white dark:bg-gray-700 dark:bg-gray-900 rounded" />
-    </EditContent>
-</EditFrame>
-
 <Dialog Title=@($"Stats for {_selectedItem?.Title}") IsOpen=@_isStatsDialogOpen CloseRequested="@(() => { _isStatsDialogOpen = false; _selectedItem = null; })">
     <Icon>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

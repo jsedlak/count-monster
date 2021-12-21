@@ -22,14 +22,14 @@
                             </a>
                         </li>
                         @*<li class="p-0 py-1 m-0"><hr class="opacity-20" /></li>*@
-                        <li class="p-0 py-0 m-0">
+                        @* <li class="p-0 py-0 m-0">
                             <a class="whitespace-nowrap px-2 py-1 block hover:bg-brand" @onclick="OnOpenEditor">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                                 Edit Counter
                             </a>
-                        </li>
+                        </li> *@
                         <li class="p-0 py-1 m-0"><hr class="opacity-20" /></li>
                         <li class="p-0 py-0 m-0">
                             <a class="whitespace-nowrap px-2 py-1 block hover:bg-brand" @onclick="OnResetCurrent">
@@ -60,7 +60,15 @@
                 </DropdownContent>
             </Dropdown>
 
-            <h1 class="flex-grow text-lg text-center p-2">@Item.Title (@Item.LifetimeCount)</h1>
+            <h1 class="flex-grow text-lg text-center p-2">
+                <EditFrame IsEditorOpenChanged="@((isOpen) => { if(isOpen) { _editingTitle = Item.Title; } })" Saved="@(async () => { await AppState.SaveAsync(); })" Cancelled="@(async () => { Item.Title = _editingTitle; })">
+                    <ViewContent>@Item.Title (@Item.LifetimeCount)</ViewContent>
+                    <EditContent>
+                        <input type="text" class="w-full p-2 dark:bg-gray-600 dark:text-white dark:border-gray-800" @bind-value=@Item.Title />
+                    </EditContent>
+                </EditFrame>
+                
+            </h1>
         </div>
 
         <div class="p-3 font-bold text-center text-6xl current-count">@Item.Runs.Count</div>
@@ -184,6 +192,8 @@ else
 
     private string? _editingTitle = string.Empty;
     private string? _editingKey = string.Empty;
+
+    private string? _tempTitleHolder = string.Empty;
 
     protected async void OnCommentsKeyUp(KeyboardEventArgs args)
     {
