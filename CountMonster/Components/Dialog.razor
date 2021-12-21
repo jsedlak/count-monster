@@ -59,16 +59,16 @@
 
 @code {
     [Parameter]
-    public string Title { get; set; }
+    public string Title { get; set; } = "Untitled Dialog";
 
     [Parameter]
-    public RenderFragment Icon { get; set; }
+    public RenderFragment? Icon { get; set; }
 
     [Parameter]
-    public RenderFragment Footer { get; set; }
+    public RenderFragment? Footer { get; set; }
 
     [Parameter]
-    public RenderFragment Content { get; set; }
+    public RenderFragment? Content { get; set; }
 
     [Parameter]
     public EventCallback CloseRequested { get; set; }

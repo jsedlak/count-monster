@@ -13,15 +13,15 @@
     public EventCallback<bool> IsToggledChanged { get; set; }
 
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    public RenderFragment? ChildContent { get; set; }
 
     [Parameter]
-    public string CssClass { get; set; }
+    public string? CssClass { get; set; }
 
     private async void OnButtonClicked()
     {
         IsToggled = !IsToggled; 
-        IsToggledChanged.InvokeAsync(IsToggled);
+        await IsToggledChanged.InvokeAsync(IsToggled);
     }
 
     private string GetCssClass()

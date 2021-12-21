@@ -60,7 +60,15 @@
                 </DropdownContent>
             </Dropdown>
 
-            <h1 class="flex-grow text-lg text-center p-2">@Item.Title (@Item.LifetimeCount)</h1>
+            <h1 class="flex-grow text-lg text-center p-2">
+                <EditFrame IsEditorOpenChanged="@((isOpen) => { if(isOpen) { _editingTitle = Item.Title; } })" Saved="@(async () => { await AppState.SaveAsync(); })" Cancelled="@(async () => { Item.Title = _editingTitle; })">
+                    <ViewContent>@Item.Title (@Item.LifetimeCount)</ViewContent>
+                    <EditContent>
+                        <input type="text" class="w-full p-2 dark:bg-gray-600 dark:text-white dark:border-gray-800" @bind-value=@Item.Title />
+                    </EditContent>
+                </EditFrame>
+                
+            </h1>
         </div>
 
         <div class="p-3 font-bold text-center text-6xl current-count">@Item.Runs.Count</div>
@@ -152,7 +160,7 @@ else
             </svg>
         </Icon>
         <Content>
-            <p>Are you sure you want to delete @(Item.Title)?</p>
+            <p>Are you sure you want to delete @(Item?.Title)?</p>
             <p class="mt-3 text-red-500 font-bold">Note: This will delete all data associated with this counter and is irreversable!</p>
         </Content>
         <Footer>
@@ -173,7 +181,7 @@ else
     public EventCallback ViewStatsRequested { get; set; }
 
     [Parameter]
-    public TrackedItem Item { get; set; }
+    public TrackedItem Item { get; set; } = new TrackedItem();
 
     private string? _commentText;
     // private DateTimeOffset _lastTimeStamp = DateTimeOffset.UtcNow;
@@ -184,6 +192,8 @@ else
 
     private string? _editingTitle = string.Empty;
     private string? _editingKey = string.Empty;
+
+    private string? _tempTitleHolder = string.Empty;
 
     protected async void OnCommentsKeyUp(KeyboardEventArgs args)
     {

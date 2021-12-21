@@ -96,12 +96,12 @@
                 Buy Me A Coffee (Donate)
             </a>
 
-            <p class="mt-4 text-gray-600 text-sm">Version: 1.20211210.2</p>
+            <p class="mt-4 text-gray-600 text-sm">Version: 1.20211221.1</p>
         </FormContent>
     </Slide>
 }
 
-@if (AppState.IsInitialized && AppState.MetaData.LatestVersionRead < AppState.MetaData.Version)
+@if (AppState.IsInitialized && AppState.MetaData.LatestVersionRead < Constants.AppVersion)
 {
 
     <Dialog Title="Welcome to Count Monster!" IsOpen=@_isReleaseNotesDialogOpen CloseRequested="OnCloseReleaseNotesRequested">
@@ -113,7 +113,7 @@
             <a class="block w-full p-3 bg-brand text-white text-center font-bold cursor-pointer rounded my-2" @onclick="OnCloseReleaseNotesRequested">Take Me To The App!</a>
 
             @{
-                var release = Constants.Releases.FirstOrDefault(m => m.Version == AppState.MetaData.Version);
+                var release = Constants.Releases.FirstOrDefault(m => m.Version == Constants.AppVersion);
 
                 if (release != null)
                 {
@@ -128,11 +128,11 @@
 
 @code {
     private TimeSpan _timeDelta = TimeSpan.FromSeconds(0);
-    private Timer _timer;
+    private Timer? _timer;
     private bool _isInfoSlideOpen = false;
     private bool _isReleaseNotesDialogOpen = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         _timer = new Timer((object? stateInfo) =>
         {
@@ -158,7 +158,7 @@
     protected async void OnCloseReleaseNotesRequested()
     {
         Console.WriteLine("Close Requested");
-        AppState.MetaData.LatestVersionRead = AppState.MetaData.Version;
+        AppState.MetaData.LatestVersionRead = Constants.AppVersion;
         await AppState.SaveAsync();
     }
 }
