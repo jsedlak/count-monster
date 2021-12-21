@@ -61,11 +61,11 @@
 
 @code {
     [Parameter]
-    public string Title { get; set; }
+    public string Title { get; set; } = "Untitled Slide";
 
     [Parameter]
     public EventCallback CloseRequested { get; set; }
 
     [Parameter]
-    public RenderFragment FormContent{ get; set; }
+    public RenderFragment? FormContent{ get; set; }
 }

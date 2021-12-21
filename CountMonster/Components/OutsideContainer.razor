@@ -7,12 +7,12 @@
 
 @code{
     [Parameter]
-    public Action OnClickOutside { get; set; }
+    public Action? OnClickOutside { get; set; }
 
     private string Id { get; set; } = Guid.NewGuid ().ToString ();
 
     [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    public RenderFragment? ChildContent { get; set; }
 
     protected override Task OnInitializedAsync () {
         JSRuntime.InvokeAsync<object> ("app.outsideClickHandler.addEvent", Id, DotNetObjectReference.Create(this));

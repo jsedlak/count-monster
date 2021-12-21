@@ -19,10 +19,10 @@
     public EventCallback<bool> IsOpenedChanged { get; set; }
 
     [Parameter]
-    public RenderFragment ButtonContent { get; set; }
+    public RenderFragment? ButtonContent { get; set; }
 
     [Parameter]
-    public RenderFragment DropdownContent { get; set; }
+    public RenderFragment? DropdownContent { get; set; }
 
     private string GetCssClass()
     {

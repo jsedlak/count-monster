@@ -26,7 +26,7 @@
 
 
     [Parameter]
-    public IEnumerable<NavItem> Items { get; set; }
+    public IEnumerable<NavItem> Items { get; set; } = new NavItem[] { };
 
     [Parameter]
     public NavItem? SelectedItem { get; set; }

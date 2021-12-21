@@ -25,7 +25,7 @@
             return -1;
         }
 
-        public static TInput At<TInput>(this IEnumerable<TInput> collection, int index)
+        public static TInput? At<TInput>(this IEnumerable<TInput> collection, int index)
         {
             int currentIndex = 0;
 
