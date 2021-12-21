@@ -65,11 +65,20 @@
 
         <div class="p-3 font-bold text-center text-6xl current-count">@Item.Runs.Count</div>
 
-        @if (Item != null && Item.Runs != null && Item.Runs.Any())
+        @if (Item != null)
         {
-            var lastRun = Item.Runs.Last();
             <div class="p-3 text-center text-sm dark:text-white opacity-50">
-                Last Run<br/>@lastRun.TimeStamp.ToString("MM/dd HH:mm:ss") (@(TimeSpan.FromSeconds(lastRun.Duration).ToString("mm\\:ss")))
+                Last Run<br/>
+                @if(Item.Runs == null || !Item.Runs.Any()) 
+                {
+                    <span>---</span>
+                }
+                else {
+                    var lastRun = Item.Runs.Last();
+                    <span>
+                        @lastRun.TimeStamp.ToString("MM/dd HH:mm:ss") (@(TimeSpan.FromSeconds(lastRun.Duration).ToString("mm\\:ss")))
+                    </span>
+                }
             </div>
         }
 
